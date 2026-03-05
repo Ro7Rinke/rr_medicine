@@ -1,6 +1,6 @@
 {
   "name": "rr_medicine",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "",
   "author": "",
   "private": true,
@@ -28,6 +28,7 @@
     "@nestjs/schedule": "^6.1.1",
     "@prisma/client": "^6.19.2",
     "bcrypt": "^6.0.0",
+    "google-auth-library": "^10.6.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
