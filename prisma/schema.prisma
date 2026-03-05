@@ -5,11 +5,114 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum DoseStatus {
+  pending
+  taken
+  skipped
+  missed
+}
+
+enum MedicationType {
+  pill
+  capsule
+  liquid
+  injection
+  drops
+  other
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  password_hash String?
+  google_id String?  @unique
+  name      String?
+  timezone  String   @default("UTC")
+  created_at DateTime @default(now())
+
+  medications        Medication[]
+  push_subscriptions PushSubscription[]
+  treatments         Treatment[]
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  user_id   String   @db.Uuid
+  endpoint  String
+  p256dh    String
+  auth      String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Medication {
+  id        String   @id @default(uuid()) @db.Uuid
+  user_id   String   @db.Uuid
+  name      String
+  dosage    Decimal?
+  unit      String?
+  type      MedicationType @default(other)
+  notes     String?
+  created_at DateTime @default(now())
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  schedules Schedule[]
+
+  @@index([user_id])
+}
+
+model Treatment {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  name       String?
+  start_date DateTime?
+  end_date   DateTime?
+  created_at DateTime @default(now())
+
+  user       User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  schedules  Schedule[]
+}
+
+model Schedule {
+  id            String   @id @default(uuid()) @db.Uuid
+  medication_id String   @db.Uuid
+  treatment_id  String?  @db.Uuid
+  time_of_day   DateTime @db.Time
+  quantity      Decimal  @default(1)
+  days_of_week  Int[]
+  created_at    DateTime @default(now())
+
+  medication Medication @relation(fields: [medication_id], references: [id], onDelete: Cascade)
+  treatment  Treatment? @relation(fields: [treatment_id], references: [id], onDelete: SetNull)
+
+  dose_events DoseEvent[]
+
+  @@index([medication_id])
+  @@index([time_of_day])
+}
+
+model DoseEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  schedule_id   String   @db.Uuid
+  scheduled_for DateTime
+  status        DoseStatus @default(pending)
+  responded_at  DateTime?
+  created_at    DateTime @default(now())
+
+  schedule Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+
+  @@index([schedule_id])
+  @@index([scheduled_for])
+  @@index([status])
 }
