@@ -11,6 +11,7 @@ import { SchedulesModule } from './schedules/schedules.module'
 import { DosesModule } from './doses/doses.module'
 import { PushModule } from './push/push.module'
 import { SchedulerModule } from './scheduler/scheduler.module'
+import { TreatmentsModule } from './treatments/treatments.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { SchedulerModule } from './scheduler/scheduler.module'
     SchedulesModule,
     DosesModule,
     PushModule,
-    SchedulerModule
+    SchedulerModule,
+    TreatmentsModule
   ],
   controllers: [AppController],
   providers: [AppService],

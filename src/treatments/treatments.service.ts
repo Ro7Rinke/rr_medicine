@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMedicationDto } from './dto/create-medication.dto';
-import { UpdateMedicationDto } from './dto/update-medication.dto';
+import { CreateTreatmentDto } from './dto/create-treatment.dto';
+import { UpdateTreatmentDto } from './dto/update-treatment.dto';
 
 @Injectable()
-export class MedicationsService {
+export class TreatmentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, data: CreateMedicationDto) {
-    return this.prisma.medication.create({
+  async create(userId: string, data: CreateTreatmentDto) {
+    return this.prisma.treatment.create({
       data: {
         user_id: userId,
         ...data,
@@ -17,27 +17,27 @@ export class MedicationsService {
   }
 
   async findAll(userId: string) {
-    return this.prisma.medication.findMany({
+    return this.prisma.treatment.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.medication.findUnique({
+    return this.prisma.treatment.findUnique({
       where: { id },
     });
   }
 
-  async update(id: string, data: UpdateMedicationDto) {
-    return this.prisma.medication.update({
+  async update(id: string, data: UpdateTreatmentDto) {
+    return this.prisma.treatment.update({
       where: { id },
       data,
     });
   }
 
   async remove(id: string) {
-    return this.prisma.medication.delete({
+    return this.prisma.treatment.delete({
       where: { id },
     });
   }
