@@ -60,13 +60,12 @@ export class SchedulerService {
 
     for (const dose of upcomingDoses) {
       const userId = dose.schedule.medication.user_id;
-      const payload = JSON.stringify({
-        title: 'Hora do Remédio!',
-        body: `Tome ${dose.schedule.medication.name} (${dose.schedule.quantity})`,
-        doseId: dose.id,
-      });
-
-      await this.pushNotificationService.sendNotificationToUser(userId, payload);
+      await this.pushNotificationService.sendDoseNotification(
+        userId,
+        dose.id,
+        dose.schedule.medication.name,
+        dose.schedule.quantity.toString(),
+      );
     }
   }
 

@@ -50,6 +50,42 @@ export class PushNotificationService {
   }
 
   /**
+   * Envia notificação de dose com actions (Tomei / Pulei)
+   */
+  async sendDoseNotification(
+    userId: string,
+    doseId: string,
+    medicationName: string,
+    quantity: string,
+  ) {
+    const payload = JSON.stringify({
+      title: 'Hora do Remédio!',
+      body: `Tome ${medicationName} (${quantity})`,
+      badge: 'https://cdn.icon-icons.com/icons2/195/PNG/256/Pill_23230.png',
+      icon: 'https://cdn.icon-icons.com/icons2/195/PNG/256/Pill_23230.png',
+      tag: `dose-${doseId}`, // Agrupa notificações da mesma dose
+      requireInteraction: true, // Não fecha automaticamente
+      data: {
+        doseId: doseId,
+      },
+      actions: [
+        {
+          action: 'taken',
+          title: 'Tomei ✓',
+          icon: 'https://cdn.icon-icons.com/icons2/2/PNG/256/check_button_alt_24728.png',
+        },
+        {
+          action: 'skipped',
+          title: 'Pulei ✗',
+          icon: 'https://cdn.icon-icons.com/icons2/3/PNG/256/x_button_close_alt_24744.png',
+        },
+      ],
+    });
+
+    await this.sendNotificationToUser(userId, payload);
+  }
+
+  /**
    * Registra ou atualiza subscription
    * Um usuário pode ter várias subscriptions (dispositivos)
    */
