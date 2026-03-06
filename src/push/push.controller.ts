@@ -3,17 +3,19 @@ import { PushService } from './push.service';
 import { CreatePushSubscriptionDto } from './dto/create-push-subscription.dto';
 import { UpdatePushSubscriptionDto } from './dto/update-push-subscription.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { PushNotificationService } from './push-notification.service';
 
 @Controller('push')
 @UseGuards(AuthGuard)
 export class PushController {
-  constructor(private readonly pushService: PushService) {}
+  constructor(
+    private readonly pushService: PushService,
+    private readonly pushNotificationService: PushNotificationService, // <- adicionado
+  ) {}
 
   @Post()
   create(@Req() req, @Body() createDto: CreatePushSubscriptionDto) {
-    // Força o user_id do payload para evitar que alguém crie pra outro usuário
-    createDto.user_id = req.user.id;
-    return this.pushService.create(createDto);
+    return this.pushNotificationService.registerSubscription(req.user.id, createDto);
   }
 
   @Get()

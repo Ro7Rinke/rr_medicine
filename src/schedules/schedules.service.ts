@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SchedulerService } from '../scheduler/scheduler.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 
 @Injectable()
 export class SchedulesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private schedulerService: SchedulerService,
+  ) {}
 
   async create(userId: string, data: CreateScheduleDto) {
     // verifica se o medicamento pertence ao usuário
@@ -14,15 +18,20 @@ export class SchedulesService {
     });
     if (!medication) throw new Error('Medication not found or not yours');
 
-    return this.prisma.schedule.create({
+    const schedule = await this.prisma.schedule.create({
       data: {
         medication_id: data.medication_id,
         treatment_id: data.treatment_id,
         time_of_day: data.time_of_day,
         quantity: data.quantity ?? 1,
-        days_of_week: data.days_of_week ?? [0,1,2,3,4,5,6],
+        days_of_week: data.days_of_week ?? [0, 1, 2, 3, 4, 5, 6],
       },
     });
+
+    // gera dose imediata do dia se aplicável
+    await this.schedulerService.generateImmediateDoseEvent(schedule.id);
+
+    return schedule;
   }
 
   async findAll(userId: string) {
@@ -46,10 +55,15 @@ export class SchedulesService {
   }
 
   async update(id: string, data: UpdateScheduleDto) {
-    return this.prisma.schedule.update({
+    const schedule = await this.prisma.schedule.update({
       where: { id },
       data,
     });
+
+    // gera dose imediata do dia após update
+    await this.schedulerService.generateImmediateDoseEvent(schedule.id);
+
+    return schedule;
   }
 
   async remove(id: string) {
